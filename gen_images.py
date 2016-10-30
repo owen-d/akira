@@ -47,5 +47,7 @@ def symlink_images(image_filenames, symlink_dir='/tmp/categories', category='aki
     output_path = os.path.join(symlink_dir, category, '{}{}'.format(idx, suffix))
     os.symlink(source, output_path) 
 
-steps = select_by_step(step=600)
-symlink_images(steps)
+
+if __name__ == "__main__":
+  steps = select_by_step(step=600)
+  symlink_images(steps, symlink_dir=os.environ['BUILDING_DIR'] + '/categories')
