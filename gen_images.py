@@ -26,7 +26,7 @@ def gen_images_from_film(path, out_dir='./data/frames'):
 
   print 'finished creating %d frames' % count
 
-def select_by_step(prefix_dir='data/frames', prefix_name='akira-frame-', start=2000, end=100000, step=24, suffix='.jpg'):
+def select_by_step(prefix_dir='data/frames', prefix_name='akira-frame-', start=2000, end=175000, step=24, suffix='.jpg'):
   filenames = []
   cwd = os.getcwd()
   for x in xrange(start, end, step):
@@ -37,7 +37,7 @@ def select_by_step(prefix_dir='data/frames', prefix_name='akira-frame-', start=2
 
   return filenames
 
-def symlink_images(image_filenames, symlink_dir='/tmp', category='akira', suffix=None, report_every=100):
+def symlink_images(image_filenames, symlink_dir='/tmp/categories', category='akira', suffix=None, report_every=100):
   category_dir = os.path.join(symlink_dir, category)
   clean_dir(category_dir)
   ensure_dir(category_dir)
@@ -47,5 +47,5 @@ def symlink_images(image_filenames, symlink_dir='/tmp', category='akira', suffix
     output_path = os.path.join(symlink_dir, category, '{}{}'.format(idx, suffix))
     os.symlink(source, output_path) 
 
-steps = select_by_step()
+steps = select_by_step(step=600)
 symlink_images(steps)
