@@ -13,6 +13,7 @@ def clean_dir(d):
       os.remove(f)
 
 def gen_images_from_film(path, out_dir='./data/frames'):
+  ensure_dir(out_dir)
   vidcap = cv2.VideoCapture(path)
 
   success, image = vidcap.read()
@@ -21,7 +22,7 @@ def gen_images_from_film(path, out_dir='./data/frames'):
 
   while success:
     success, image = vidcap.read()
-    cv2.imwrite(out_dir + '/frame-%d' % count, image)
+    cv2.imwrite(out_dir + '/frame-%d.jpg' % count, image)
     count +=1
 
   print 'finished creating %d frames' % count
@@ -48,6 +49,6 @@ def symlink_images(image_filenames, symlink_dir='/tmp/categories', category='aki
     os.symlink(source, output_path) 
 
 
-if __name__ == "__main__":
-  steps = select_by_step(step=600)
-  symlink_images(steps, symlink_dir=os.environ['BUILDING_DIR'] + '/categories')
+# if __name__ == "__main__":
+#   steps = select_by_step(step=600)
+#   symlink_images(steps, symlink_dir=os.environ['BUILDING_DIR'] + '/categories')
