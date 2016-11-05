@@ -1,16 +1,7 @@
 import cv2
 import os
 import glob
-
-def ensure_dir(d):
-  if not os.path.exists(d):
-    os.makedirs(d)
-
-def clean_dir(d):
-  if os.path.exists(d):
-    files = glob.glob(os.path.join(d, '*'))
-    for f in files:
-      os.remove(f)
+from file_utils import ensure_dir, clean_dir
 
 def gen_images_from_film(path, out_dir='./data/frames'):
   ensure_dir(out_dir)
@@ -22,12 +13,12 @@ def gen_images_from_film(path, out_dir='./data/frames'):
 
   while success:
     success, image = vidcap.read()
-    cv2.imwrite(out_dir + '/frame-%d.jpg' % count, image)
+    cv2.imwrite(out_dir + '/%d.jpg' % count, image)
     count +=1
 
   print 'finished creating %d frames' % count
 
-def select_by_step(prefix_dir='data/frames', prefix_name='akira-frame-', start=2000, end=175000, step=24, suffix='.jpg'):
+def select_by_step(prefix_dir='data/frames', prefix_name='', start=2000, end=175000, step=24, suffix='.jpg'):
   filenames = []
   cwd = os.getcwd()
   for x in xrange(start, end, step):
