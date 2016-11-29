@@ -22,15 +22,4 @@ with slim.arg_scope([slim.conv2d, slim.full_connected], padding='SAME',
   net = slim.fully_connected(net, 1000, activation_fn=None, scope='fc_1')
 
 
-# later...
-loss = slim.losses.softmax_cross_entropy(scene_predictions, scene_labels)
-optimizer = tf.train.GradientDescentOptimizer(learning_rate)
-train_op = slim.learning.create_train_op(loss, optimizer)
-logdir = '/tmp'
 
-slim.learning.train(
-    train_op,
-    logdir,
-    number_of_steps=1000,
-    save_summaries_secs=300,
-    save_interval_secs=600):
