@@ -12,21 +12,21 @@ with g.as_default():
   # load
   images, labels = ...
 
-  #define model
+  # define model
   predictions = net(images, is_training=True)
 
   # Specify the loss function:
-    slim.losses.softmax_cross_entropy(predictions, labels)
+  slim.losses.softmax_cross_entropy(predictions, labels)
 
-    total_loss = slim.losses.get_total_loss()
-    tf.summary.scalar('losses/total loss', total_loss)
+  total_loss = slim.losses.get_total_loss()
+  tf.summary.scalar('losses/total loss', total_loss)
 
-    # Specify the optimization scheme:
-    optimizer = tf.train.GradientDescentOptimizer(learning_rate=.001)
+  # Specify the optimization scheme:
+  optimizer = tf.train.GradientDescentOptimizer(learning_rate=.001)
 
-    # create_train_op that ensures that when we evaluate it to get the loss,
-    # the update_ops are done and the gradient updates are computed.
-    train_tensor = slim.learning.create_train_op(total_loss, optimizer)
+  # create_train_op that ensures that when we evaluate it to get the loss,
+  # the update_ops are done and the gradient updates are computed.
+  train_tensor = slim.learning.create_train_op(total_loss, optimizer)
 
-    # Actually runs training.
-    slim.learning.train(train_tensor, train_log_dir)
+  # Actually runs training.
+  slim.learning.train(train_tensor, train_log_dir)
