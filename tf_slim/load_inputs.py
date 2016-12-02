@@ -1,39 +1,81 @@
 # ideas: https://indico.io/blog/tensorflow-data-inputs-part1-placeholders-protobufs-queues/
+from __future__ import absolute_import
 from __future__ import division
+from __future__ import print_function
+
+from datetime import datetime
+import os
+import random
+import sys
+import threading
+
+
+import numpy as np
 import tensorflow as tf
+# --------------------------------- UNUSED ---------------------------------
+# class Dataset:
+#   def __init__(self, train_dir='/tmp/TRAIN', validation_dir='/tmp/VALIDATION'):
+#     self.train_dir = train_dir
+#     self.validation_dir = validation_dir
 
-class Dataset:
-  def __init__(self, train_dir='/tmp/TRAIN', validation_dir='/tmp/VALIDATION'):
-    self.train_dir = train_dir
-    self.validation_dir = validation_dir
+# def load_set(source_dir):
+#   classification = source_dir.split('/')[-1]
 
-def load_set(source_dir):
-  classification = source_dir.split('/')[-1]
+# def load_image();
+#   pass
 
-def load_image();
-  pass
+# def build_example():
+#   pass
+#   # use tf.train.Example,
+#   # via tf.train.Feature, potentially using  following features
+#       # image/encoded: string containing JPEG encoded image in RGB colorspace
+#       # image/height: integer, image height in pixels
+#       # image/width: integer, image width in pixels
+#       # image/colorspace: string, specifying the colorspace, always 'RGB'
+#       # image/channels: integer, specifying the number of channels, always 3
+#       # image/format: string, specifying the format, always'JPEG'
+#       # image/filename: string containing the basename of the image file
+#       #           e.g. 'n01440764_10026.JPEG' or 'ILSVRC2012_val_00000293.JPEG'
+#       # image/class/label: integer specifying the index in a classification layer.
+#       #   The label ranges from [0, num_labels] where 0 is unused and left as
+#       #   the background class.
+#       # image/class/text: string specifying the human-readable version of the label
+#       #   e.g. 'dog'
 
-def build_example():
-  pass
-  # use tf.train.Example,
-  # via tf.train.Feature, potentially using  following features
-      # image/encoded: string containing JPEG encoded image in RGB colorspace
-      # image/height: integer, image height in pixels
-      # image/width: integer, image width in pixels
-      # image/colorspace: string, specifying the colorspace, always 'RGB'
-      # image/channels: integer, specifying the number of channels, always 3
-      # image/format: string, specifying the format, always'JPEG'
-      # image/filename: string containing the basename of the image file
-      #           e.g. 'n01440764_10026.JPEG' or 'ILSVRC2012_val_00000293.JPEG'
-      # image/class/label: integer specifying the index in a classification layer.
-      #   The label ranges from [0, num_labels] where 0 is unused and left as
-      #   the background class.
-      # image/class/text: string specifying the human-readable version of the label
-      #   e.g. 'dog'
+# def flush_images():
+#   pass
+#   # user tf.python_io.TFRecordWriter
+# ------------------------------------------------------------------
 
-def flush_images():
-  pass
-  # user tf.python_io.TFRecordWriter
+
+#Flags
+tf.app.flags.DEFINE_string('train_directory', '/tmp/',
+                           'Training data directory')
+tf.app.flags.DEFINE_string('validation_directory', '/tmp/',
+                           'Validation data directory')
+tf.app.flags.DEFINE_string('output_directory', '/tmp/',
+                           'Output data directory')
+
+tf.app.flags.DEFINE_integer('train_shards', 2,
+                            'Number of shards in training TFRecord files.')
+tf.app.flags.DEFINE_integer('validation_shards', 2,
+                            'Number of shards in validation TFRecord files.')
+
+tf.app.flags.DEFINE_integer('num_threads', 2,
+                            'Number of threads to preprocess the images.')
+
+# The labels file contains a list of valid labels are held in this file.
+# Assumes that the file contains entries as such:
+#   dog
+#   cat
+#   flower
+# where each line corresponds to a label. We map each label contained in
+# the file to an integer corresponding to the line number starting from 0.
+tf.app.flags.DEFINE_string('labels_file', '', 'Labels file')
+
+
+FLAGS = tf.app.flags.FLAGS
+
 
 class ImageCoder(object):
   """Helper class that provides TensorFlow image coding utilities."""
@@ -121,6 +163,47 @@ def _find_image_files(data_dir, labels_file):
         (len(filenames), len(unique_labels), data_dir))
   return filenames, texts, labels
 
+
+def _int64_feature(value):
+  """Wrapper for inserting int64 features into Example proto."""
+  if not isinstance(value, list):
+    value = [value]
+  return tf.train.Feature(int64_list=tf.train.Int64List(value=value))
+
+
+def _bytes_feature(value):
+  """Wrapper for inserting bytes features into Example proto."""
+  return tf.train.Feature(bytes_list=tf.train.BytesList(value=[value]))
+
+
+def _convert_to_example(filename, image_buffer, label, text, height, width):
+  """Build an Example proto for an example.
+  Args:
+    filename: string, path to an image file, e.g., '/path/to/example.JPG'
+    image_buffer: string, JPEG encoding of RGB image
+    label: integer, identifier for the ground truth for the network
+    text: string, unique human-readable, e.g. 'dog'
+    height: integer, image height in pixels
+    width: integer, image width in pixels
+  Returns:
+    Example proto
+  """
+
+  colorspace = 'RGB'
+  channels = 3
+  image_format = 'JPEG'
+
+  example = tf.train.Example(features=tf.train.Features(feature={
+      'image/height': _int64_feature(height),
+      'image/width': _int64_feature(width),
+      'image/colorspace': _bytes_feature(colorspace),
+      'image/channels': _int64_feature(channels),
+      'image/class/label': _int64_feature(label),
+      'image/class/text': _bytes_feature(text),
+      'image/format': _bytes_feature(image_format),
+      'image/filename': _bytes_feature(os.path.basename(filename)),
+      'image/encoded': _bytes_feature(image_buffer)}))
+  return example
 
 def _process_image(filename, coder):
   """Process a single image file.
@@ -217,7 +300,7 @@ def _process_image_files_batch(coder, thread_index, ranges, name, filenames,
   sys.stdout.flush()
 
 
-def _process_image_files(name, filenames, texts, labels, num_shards, num_threads=8):
+def _process_image_files(name, filenames, texts, labels, num_shards):
   """Process and save list of images as TFRecord of Example protos.
   Args:
     name: string, unique identifier specifying the data set
@@ -260,3 +343,32 @@ def _process_image_files(name, filenames, texts, labels, num_shards, num_threads
   sys.stdout.flush()
 
 
+def _process_dataset(name, directory, num_shards, labels_file):
+  """Process a complete data set and save it as a TFRecord.
+  Args:
+    name: string, unique identifier specifying the data set.
+    directory: string, root path to the data set.
+    num_shards: integer number of shards for this data set.
+    labels_file: string, path to the labels file.
+  """
+  filenames, texts, labels = _find_image_files(directory, labels_file)
+  _process_image_files(name, filenames, texts, labels, num_shards)
+
+
+def main(unused_argv):
+  assert not FLAGS.train_shards % FLAGS.num_threads, (
+      'Please make the FLAGS.num_threads commensurate with FLAGS.train_shards')
+  assert not FLAGS.validation_shards % FLAGS.num_threads, (
+      'Please make the FLAGS.num_threads commensurate with '
+      'FLAGS.validation_shards')
+  print('Saving results to %s' % FLAGS.output_directory)
+
+  # Run it!
+  _process_dataset('validation', FLAGS.validation_directory,
+                   FLAGS.validation_shards, FLAGS.labels_file)
+  _process_dataset('train', FLAGS.train_directory,
+                   FLAGS.train_shards, FLAGS.labels_file)
+
+
+if __name__ == '__main__':
+  tf.app.run()
