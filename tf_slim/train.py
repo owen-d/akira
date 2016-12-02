@@ -10,7 +10,9 @@ g = tf.Graph()
 
 with g.as_default():
   # load
-  images, labels = ...
+  images, labels = image_processing.distorted_inputs(
+      dataset,
+      num_preprocess_threads=num_preprocess_threads)
 
   # define model
   predictions = net(images, is_training=True)
@@ -22,7 +24,7 @@ with g.as_default():
   tf.summary.scalar('losses/total loss', total_loss)
 
   # Specify the optimization scheme:
-  optimizer = tf.train.GradientDescentOptimizer(learning_rate=.001)
+  optimizer = tf.train.GradientDescentOptimizer(learning_rate=.01)
 
   # create_train_op that ensures that when we evaluate it to get the loss,
   # the update_ops are done and the gradient updates are computed.
