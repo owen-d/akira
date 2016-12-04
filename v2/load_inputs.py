@@ -12,40 +12,6 @@ import threading
 
 import numpy as np
 import tensorflow as tf
-# --------------------------------- UNUSED ---------------------------------
-# class Dataset:
-#   def __init__(self, train_dir='/tmp/TRAIN', validation_dir='/tmp/VALIDATION'):
-#     self.train_dir = train_dir
-#     self.validation_dir = validation_dir
-
-# def load_set(source_dir):
-#   classification = source_dir.split('/')[-1]
-
-# def load_image();
-#   pass
-
-# def build_example():
-#   pass
-#   # use tf.train.Example,
-#   # via tf.train.Feature, potentially using  following features
-#       # image/encoded: string containing JPEG encoded image in RGB colorspace
-#       # image/height: integer, image height in pixels
-#       # image/width: integer, image width in pixels
-#       # image/colorspace: string, specifying the colorspace, always 'RGB'
-#       # image/channels: integer, specifying the number of channels, always 3
-#       # image/format: string, specifying the format, always'JPEG'
-#       # image/filename: string containing the basename of the image file
-#       #           e.g. 'n01440764_10026.JPEG' or 'ILSVRC2012_val_00000293.JPEG'
-#       # image/class/label: integer specifying the index in a classification layer.
-#       #   The label ranges from [0, num_labels] where 0 is unused and left as
-#       #   the background class.
-#       # image/class/text: string specifying the human-readable version of the label
-#       #   e.g. 'dog'
-
-# def flush_images():
-#   pass
-#   # user tf.python_io.TFRecordWriter
-# ------------------------------------------------------------------
 
 
 #Flags
