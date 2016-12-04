@@ -62,6 +62,7 @@ class Dataset(object):
       ValueError: if there are not data_files matching the subset.
     """
     tf_record_pattern = os.path.join(FLAGS.data_dir, '%s-*' % self.subset)
+    print(tf_record_pattern)
     data_files = tf.gfile.Glob(tf_record_pattern)
     if not data_files:
       print('No files found for dataset %s/%s at %s' % (self.name,
@@ -84,7 +85,7 @@ class FilmData(Dataset):
   """Flowers data set."""
 
   def __init__(self, subset):
-    super(FilmData, self).__init__('Flowers', subset)
+    super(FilmData, self).__init__('Films', subset)
 
   def num_classes(self):
     """Returns the number of classes in the data set."""
@@ -93,6 +94,6 @@ class FilmData(Dataset):
   def num_examples_per_epoch(self):
     """Returns the number of examples in the data subset."""
     if self.subset == 'train':
-      return 3170
+      return 19244
     if self.subset == 'validation':
-      return 500
+      return 8250

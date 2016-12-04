@@ -176,6 +176,18 @@ def _bytes_feature(value):
   return tf.train.Feature(bytes_list=tf.train.BytesList(value=[value]))
 
 
+def _is_png(filename):
+  """Determine if a file contains a PNG format image.
+
+  Args:
+    filename: string, path of the image file.
+
+  Returns:
+    boolean indicating if the image is a PNG.
+  """
+  return '.png' in filename
+
+
 def _convert_to_example(filename, image_buffer, label, text, height, width):
   """Build an Example proto for an example.
   Args:
@@ -218,7 +230,7 @@ def _process_image(filename, coder):
   # Read the image file.
   with tf.gfile.FastGFile(filename, 'r') as f:
     image_data = f.read()
-
+    
   # Convert any PNG to JPEG's for consistency.
   if _is_png(filename):
     print('Converting PNG to JPEG for %s' % filename)
