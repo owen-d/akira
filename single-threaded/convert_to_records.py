@@ -161,9 +161,7 @@ def _find_image_files(data_dir, labels_file):
     texts.extend([text] * len(matching_files))
     filenames.extend(matching_files)
 
-    if not label_index % 100:
-      print('Finished finding files in %d of %d classes.' % (
-          label_index, len(labels)))
+    print('Finished finding %d images for class %s with label_index %d' % (len(labels), text, label_index))
     label_index += 1
 
   # Shuffle the ordering of all image files in order to guarantee
