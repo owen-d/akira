@@ -1,6 +1,7 @@
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
 from model import simple, inputs
+import matplotlib.pyplot as plt
 
 flags = tf.app.flags
 flags.DEFINE_string('train_dir', '/tmp/data',
@@ -11,6 +12,11 @@ flags.DEFINE_string('log_dir', '/tmp/log/train',
           'Directory with the log data.')
 FLAGS = flags.FLAGS
 
+
+def view_image(image_buffer):
+  tf.image.decode_jpeg(image_buffer, channels=3)
+  plt.imshow(image_buffer)
+  plt.show()  
 
 def train(train_dir, batch_size, num_batches, log_dir):
   images, labels = inputs(train_dir,
