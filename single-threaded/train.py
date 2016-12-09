@@ -27,10 +27,11 @@ def train(train_dir, batch_size, num_batches, log_dir):
 
   predictions = simple(images)
   slim.losses.softmax_cross_entropy(predictions, labels)
-  total_loss = slim.losses.get_total_loss()
+  total_loss = tf.clip_by_value(slim.losses.get_total_loss(), 1e-10, 1.0)
   tf.scalar_summary('loss', total_loss)
 
-  optimizer = tf.train.RMSPropOptimizer(0.001, 0.9)
+  #optimizer = tf.train.RMSPropOptimizer(0.001, 0.9)
+  optimizer = tf.train.GradientDescentOptimizer(0.005)
   train_op = slim.learning.create_train_op(total_loss, optimizer, summarize_gradients=True)
 
   slim.learning.train(train_op, log_dir, save_summaries_secs=20)
