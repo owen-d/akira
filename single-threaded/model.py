@@ -13,13 +13,13 @@ FLAGS = tf.app.flags.FLAGS
 
 
 def simple(images):
-   net = slim.layers.conv2d(images, 20, [5,5], scope='conv1')
+   net = slim.layers.conv2d(images, 20, [3,3], scope='conv1')
    net = slim.layers.max_pool2d(net, [2,2], scope='pool1')
-   net = slim.layers.conv2d(net, 50, [5,5], scope='conv2')
+   net = slim.layers.conv2d(net, 50, [3,3], scope='conv2')
    net = slim.layers.max_pool2d(net, [2,2], scope='pool2')
    net = slim.layers.flatten(net, scope='flatten3')
    net = slim.layers.fully_connected(net, 500, scope='fully_connected4')
-   net = slim.layers.fully_connected(net, 5, activation_fn=None, scope='fully_connected5')
+   net = slim.layers.fully_connected(net, FLAGS.num_classes, activation_fn=None, scope='fully_connected5')
    return net
 
 
