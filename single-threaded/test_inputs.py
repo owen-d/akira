@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 import preprocessing
+from model import inputs
 
 train_file = '/home/owen/projects/akira/build/single-threaded/train.tfrecords'
 
@@ -29,22 +30,26 @@ def read_and_decode(filename_queue):
   classification = features['image/class/label']
   return image, label, classification
 
+def alt_loader(batch_size):
+  images, labels = inputs('/home/owen/projects/akira/build/single-threaded',
+              batch_size,
+              None,
+              one_hot_labels=True,
+              train=True)
+  return images, labels
+
 def main():
   with tf.Session() as sess:
-    queue = filename_queue = tf.train.string_input_producer(
-        [train_file], num_epochs=None)
+    #queue = filename_queue = tf.train.string_input_producer(
+    #    [train_file], num_epochs=None)
 
-    image, label, classification  = read_and_decode(queue)
+    #image, label, classification  = read_and_decode(queue)
+    images, labels = alt_loader(5)
     tf.initialize_all_variables().run()
     coord = tf.train.Coordinator()
     threads = tf.train.start_queue_runners(coord=coord)
-    for i in range(20):
-      image_buffer, ex_label, ex_class  = sess.run([image, label, classification])
-      #print(i, ex_label, ex_class)
-      if i % 10 == 0:
-        image_test = preprocessing.preprocess_image(image_buffer)
-        result = sess.run(image_test)
-        view_image(result)
+    images, labels = sess.run([images, labels])
+    print(labels)
     coord.request_stop()
     coord.join(threads)
 
